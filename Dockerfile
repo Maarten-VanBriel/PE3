@@ -1,39 +1,8 @@
-name: Docker Image CI
+FROM maven:3.5-jdk-8 as BUILD
+COPY src /usr/src/myapp/src
+COPY pom.xml /usr/src/myapp
+RUN mvn -f /usr/src/myapp/pom.xml compiler:compile war:war
+RUN ls -al /usr/src/myapp/target
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Check Out Repo
-      uses: actions/checkout@v2
-      
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_HUB_USERNAME }}
-        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-        
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v1
-      
-    - name: Build and push
-      id: docker_build
-      uses: docker/build-push-action@v2
-      with:
-        context: ./
-        file: ./Dockerfile
-        push: true
-        tags: tedison/besturingssystemen:latest
-      
-    - name: Image digest
-      run: echo ${{ steps.docker_build.outputs.digest }}
+FROM tomcat:7.0
+COPY --from=BUILD /usr/src/myapp/target/*.war /usr/local/tomcat/webapps/ROOT.war
