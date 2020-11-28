@@ -33,7 +33,7 @@ jobs:
         context: ./
         file: ./Dockerfile
         push: true
-        tags: tedison/besturingssystemen:latest
+        tags: Maarten-VanBriel/PE3:latest
       
     - name: Image digest
       run: echo ${{ steps.docker_build.outputs.digest }}
